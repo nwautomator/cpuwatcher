@@ -1,0 +1,68 @@
+<html>
+<!-- 
+Copyright (C) 2016 Chris Freas (code@packetbusters.net)
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA 02111-1307 USA
+-->
+
+    <head>
+    <title>Cisco CPU Watcher</title>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+        google.charts.load('current', {'packages':['gauge']});
+        google.charts.setOnLoadCallback(drawChart);
+      
+        function drawChart() {
+            // make an AJAX request
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    cpustats = this.responseText.split(" ");
+                    cpu5s = cpustats[0];
+                    cpu1m = cpustats[1];
+                    cpu5m = cpustats[2];
+
+                    var data = google.visualization.arrayToDataTable([
+                        ['Label', 'Value'],
+                        ['CPU 5s', 0],
+                        ['CPU 1m', 0],
+                        ['CPU 5m', 0]
+                    ]);
+
+                    var options = {
+                        width: 400, height: 120,
+                        redFrom: 90, redTo: 100,
+                        yellowFrom:75, yellowTo: 90,
+                        minorTicks: 5
+                    };
+
+                    var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+                    data.setValue(0, 1, Number(cpu5s));
+                    data.setValue(1, 1, Number(cpu1m));
+                    data.setValue(2, 1, Number(cpu5m));
+
+                    chart.draw(data, options);
+            }
+        };
+        xmlhttp.open("POST","cpurefresh.php");
+        xmlhttp.send();
+    }
+    setInterval(function(){drawChart();},250);
+    </script>
+  </head>
+<body>
+<h1>Cisco CPU Utilization Gauge</h1>
+<div id="chart_div" style="width: 400px; height: 120px;"></div>
+</body>
+</html>
